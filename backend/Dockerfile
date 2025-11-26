@@ -1,0 +1,15 @@
+FROM maven:3.9.8-eclipse-temurin-21 AS build
+WORKDIR /app
+COPY pom.xml pom.xml
+RUN mvn -q -DskipTests dependency:go-offline
+COPY src src
+RUN mvn -DskipTests package
+
+FROM tomcat:10.1-jdk21-temurin
+ENV SPRING_DATASOURCE_URL=jdbc:mysql://db:3306/acme_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+ENV SPRING_DATASOURCE_USERNAME=root
+ENV SPRING_DATASOURCE_PASSWORD=changeit
+ENV SPRING_FLYWAY_ENABLED=true
+COPY --from=build /app/target/*.war /usr/local/tomcat/webapps/ROOT.war
+EXPOSE 8080
+CMD ["catalina.sh","run"]
