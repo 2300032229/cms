@@ -2,31 +2,28 @@ pipeline {
     agent any
 
     stages {
+
         stage('Checkout') {
             steps {
                 checkout scm
             }
         }
 
-        stage('Build Backend') {
+        stage('Build Backend Image') {
             steps {
-                script {
-                    docker.build('backend', 'backend/')
-                }
+                bat "docker build -t backend-image ./backend"
             }
         }
 
-        stage('Build Frontend') {
+        stage('Build Frontend Image') {
             steps {
-                script {
-                    docker.build('frontend', 'storyspark-content-hub-main/')
-                }
+                bat "docker build -t frontend-image ./storyspark-content-hub-main"
             }
         }
 
-        stage('Deploy') {
+        stage('Deploy with Docker Compose') {
             steps {
-                sh 'docker-compose up -d'
+                bat "docker-compose -f docker-compose.yml up -d --build"
             }
         }
     }
